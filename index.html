@@ -11,7 +11,7 @@
     />
     <!-- Chosen Palette: Calm Harmony -->
     <!-- Application Structure Plan: A two-column interactive dashboard. The left column provides navigation (Why, What, How), and the right displays the agenda points as interactive cards. Each card allows users to track its discussion status and take notes. This structure was chosen to transform a static agenda into a dynamic management tool for the team, facilitating preparation, meeting execution, and outcome documentation, directly addressing the goal of preventing misalignment and rework. -->
-    <!-- Visualization & Content Choices: Report Info: Meeting agenda questions. -> Goal: Organize and manage discussion points. -> Viz/Presentation: Interactive cards with status indicators and note fields. -> Interaction: Click to change status, type in notes. -> Justification: Provides a clear, actionable interface for managing the meeting's objectives. -> Library/Method: HTML/Tailwind CSS for structure, Vanilla JS for interactivity. -->
+    <!-- Visualization & Content Choices: Report Info: Meeting agenda questions. -> Goal: Organize and manage discussion points. -> Viz/Presentation: Interactive cards with status indicators and note fields. -> Interaction: Click to change status, type in notes. -> Justification: Provides a clear, actionable interface for managing the meeting's objectives. -> Library/Method: HTML/Tailwind CSS for structure, Vanilla JS for interactivity, Firestore for real-time data synchronization. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
       body {
@@ -26,9 +26,28 @@
       .status-btn {
         transition: all 0.2s ease-in-out;
       }
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.3s;
+      }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-800">
+    <div id="loading-overlay">
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-sky-600"
+      ></div>
+    </div>
+
     <div class="min-h-screen">
       <header class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
@@ -347,38 +366,143 @@
       </main>
     </div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const statuses = ["未確認", "議論中", "確認済"];
-        const statusColors = {
-          未確認: "bg-slate-200 text-slate-700",
-          議論中: "bg-amber-100 text-amber-800",
-          確認済: "bg-green-100 text-green-800",
-        };
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import {
+        getAuth,
+        signInAnonymously,
+        signInWithCustomToken,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        onSnapshot,
+        setDoc,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const statusButtons = document.querySelectorAll(".status-btn");
+      const firebaseConfig =
+        typeof __firebase_config !== "undefined"
+          ? JSON.parse(__firebase_config)
+          : {
+              apiKey: "YOUR_API_KEY",
+              authDomain: "YOUR_AUTH_DOMAIN",
+              projectId: "YOUR_PROJECT_ID",
+            };
+      const appId =
+        typeof __app_id !== "undefined"
+          ? __app_id
+          : "default-kickoff-dashboard";
 
-        statusButtons.forEach((btn) => {
-          let currentStatusIndex = 0;
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
-          const updateButton = () => {
-            btn.textContent = statuses[currentStatusIndex];
-            btn.className =
-              "status-btn text-sm font-medium py-1 px-3 rounded-full " +
-              statusColors[statuses[currentStatusIndex]];
-          };
+      const statuses = ["未確認", "議論中", "確認済"];
+      const statusColors = {
+        未確認: "bg-slate-200 text-slate-700",
+        議論中: "bg-amber-100 text-amber-800",
+        確認済: "bg-green-100 text-green-800",
+      };
 
-          btn.addEventListener("click", () => {
-            currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
-            updateButton();
-          });
+      let dbDocRef;
+      let isUpdating = false;
 
-          updateButton();
+      async function main() {
+        try {
+          if (
+            typeof __initial_auth_token !== "undefined" &&
+            __initial_auth_token
+          ) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+        } catch (error) {
+          console.error("Authentication failed:", error);
+          return;
+        }
+
+        dbDocRef = doc(
+          db,
+          `/artifacts/${appId}/public/data/kickoff_dashboard/state`
+        );
+
+        onSnapshot(dbDocRef, (doc) => {
+          isUpdating = true;
+          const appData = doc.exists() ? doc.data() : {};
+          updateUI(appData);
+          document.getElementById("loading-overlay").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("loading-overlay").style.display = "none";
+          }, 300);
+          isUpdating = false;
         });
 
+        setupEventListeners();
+        setupNavObserver();
+      }
+
+      function updateUI(appData) {
+        document.querySelectorAll(".bg-white[data-id]").forEach((card) => {
+          const cardId = card.getAttribute("data-id");
+          const cardData = appData[cardId] || { statusIndex: 0, note: "" };
+
+          const textarea = card.querySelector("textarea");
+          if (textarea && textarea.value !== cardData.note) {
+            textarea.value = cardData.note;
+          }
+
+          const btn = card.querySelector(".status-btn");
+          if (btn) {
+            const statusIndex = cardData.statusIndex;
+            btn.textContent = statuses[statusIndex];
+            btn.className =
+              "status-btn text-sm font-medium py-1 px-3 rounded-full " +
+              statusColors[statuses[statusIndex]];
+            btn.dataset.statusIndex = statusIndex;
+          }
+        });
+      }
+
+      function setupEventListeners() {
+        document.querySelectorAll(".bg-white[data-id]").forEach((card) => {
+          const cardId = card.getAttribute("data-id");
+
+          const btn = card.querySelector(".status-btn");
+          btn.addEventListener("click", () => {
+            let currentStatusIndex = parseInt(btn.dataset.statusIndex, 10);
+            currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
+
+            updateFirestore({ [`${cardId}.statusIndex`]: currentStatusIndex });
+          });
+
+          const textarea = card.querySelector("textarea");
+          let debounceTimer;
+          textarea.addEventListener("input", () => {
+            if (isUpdating) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+              updateFirestore({ [`${cardId}.note`]: textarea.value });
+            }, 500);
+          });
+        });
+      }
+
+      async function updateFirestore(data) {
+        try {
+          await setDoc(dbDocRef, data, { merge: true });
+        } catch (error) {
+          console.error("Error updating document: ", error);
+          if (error.code === "not-found") {
+            await setDoc(dbDocRef, data);
+          }
+        }
+      }
+
+      function setupNavObserver() {
         const navLinks = document.querySelectorAll(".nav-link");
         const sections = document.querySelectorAll("section");
-
         const observerOptions = {
           root: null,
           rootMargin: "0px",
@@ -400,21 +524,19 @@
           });
         }, observerOptions);
 
-        sections.forEach((section) => {
-          observer.observe(section);
-        });
+        sections.forEach((section) => observer.observe(section));
 
         navLinks.forEach((link) => {
           link.addEventListener("click", (e) => {
             e.preventDefault();
-            const targetId = link.getAttribute("href");
-            document.querySelector(targetId).scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
+            document
+              .querySelector(link.getAttribute("href"))
+              .scrollIntoView({ behavior: "smooth", block: "start" });
           });
         });
-      });
+      }
+
+      main();
     </script>
   </body>
 </html>
