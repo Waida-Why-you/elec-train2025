@@ -381,14 +381,14 @@
         updateDoc,
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCHPWzMOQ0uw79NIiGdw1dsniH4fwz7ZOA",
-        authDomain: "elec-train2025.firebaseapp.com",
-        projectId: "elec-train2025",
-        storageBucket: "elec-train2025.firebasestorage.app",
-        messagingSenderId: "298096330805",
-        appId: "1:298096330805:web:3d76b8c31167294089c97c",
-      };
+      const firebaseConfig =
+        typeof __firebase_config !== "undefined"
+          ? JSON.parse(__firebase_config)
+          : {
+              apiKey: "YOUR_API_KEY",
+              authDomain: "YOUR_AUTH_DOMAIN",
+              projectId: "YOUR_PROJECT_ID",
+            };
       const appId =
         typeof __app_id !== "undefined"
           ? __app_id
