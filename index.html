@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>研修発表キックオフ・ダッシュボード</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A two-column interactive dashboard. The left column provides navigation (Why, What, How), and the right displays the agenda points as interactive cards. Each card allows users to track its discussion status and take notes. This structure was chosen to transform a static agenda into a dynamic management tool for the team, facilitating preparation, meeting execution, and outcome documentation, directly addressing the goal of preventing misalignment and rework. -->
+    <!-- Visualization & Content Choices: Report Info: Meeting agenda questions. -> Goal: Organize and manage discussion points. -> Viz/Presentation: Interactive cards with status indicators and note fields. -> Interaction: Click to change status, type in notes. -> Justification: Provides a clear, actionable interface for managing the meeting's objectives. -> Library/Method: HTML/Tailwind CSS for structure, Vanilla JS for interactivity. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {
+        font-family: "Noto Sans JP", "Inter", sans-serif;
+        scroll-behavior: smooth;
+      }
+      .nav-link.active {
+        background-color: #e0f2fe;
+        color: #0c4a6e;
+        font-weight: 600;
+      }
+      .status-btn {
+        transition: all 0.2s ease-in-out;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800">
+    <div class="min-h-screen">
+      <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <h1 class="text-2xl font-bold text-slate-900">
+            研修発表キックオフ・ダッシュボード
+          </h1>
+          <p class="text-sm text-slate-600 mt-1">
+            責任者との初回ディスカッションを成功させるための作戦司令室
+          </p>
+        </div>
+      </header>
+
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- Navigation -->
+          <aside class="md:w-1/4 lg:w-1/5">
+            <nav id="desktop-nav" class="sticky top-24">
+              <h2 class="text-lg font-semibold mb-3 px-2">議題セクション</h2>
+              <ul class="space-y-1">
+                <li>
+                  <a
+                    href="#why"
+                    class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200"
+                    >A. 目的と背景 (Why)</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#what"
+                    class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200"
+                    >B. 内容と範囲 (What)</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#how"
+                    class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200"
+                    >C. 評価と進め方 (How)</a
+                  >
+                </li>
+              </ul>
+            </nav>
+          </aside>
+
+          <!-- Content -->
+          <div class="flex-1 md:w-3/4 lg:w-4/5">
+            <!-- Section A: WHY -->
+            <section id="why" class="mb-12">
+              <h2
+                class="text-xl font-bold border-b-2 border-sky-600 pb-2 mb-4 text-sky-800"
+              >
+                A. 発表の目的と背景の確認 (Why:
+                なぜ、このテーマに取り組むのか？)
+              </h2>
+              <p class="mb-6 text-slate-600">
+                プロジェクトの根幹となる「なぜ」を明確にするセクションです。ここでの合意が、今後の活動のブレない軸となります。テーマ設定の裏にある真の狙いや期待されている成長を深く理解しましょう。
+              </p>
+              <div class="space-y-4">
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="a1">
+                  <h3 class="font-semibold text-lg mb-2">
+                    1. テーマ設定の意図について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    IT企業に所属する私たちが「電気機械業界」を調査する背景には、どのような課題意識や狙いがあるのでしょうか。今後の事業戦略や人材戦略と関連があるのか、あるいは研修としての学びが主眼なのか、意図をお聞かせください。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                      placeholder="責任者からの回答やチームの解釈を記録..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="a2">
+                  <h3 class="font-semibold text-lg mb-2">
+                    2. 研修としての狙いについて
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    この発表準備のプロセスを通して、私たち（発表者）にどのようなスキル（例：業界分析力、課題発見・解決力、提言力など）を身につけてほしいとお考えでしょうか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                      placeholder="期待されるスキルセットを具体的に..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="a3">
+                  <h3 class="font-semibold text-lg mb-2">
+                    3. 発表のゴールについて
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    聞き手の方々には、この発表を聞いてどのような状態になってほしいですか。知見を深めることがゴールか、あるいは、何らかの気づきや次のアクションを促すことがゴールでしょうか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                      placeholder="発表の最終到達点を定義..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section B: WHAT -->
+            <section id="what" class="mb-12">
+              <h2
+                class="text-xl font-bold border-b-2 border-teal-600 pb-2 mb-4 text-teal-800"
+              >
+                B. 発表内容と範囲のすり合わせ (What: 何を、どこまで話すべきか？)
+              </h2>
+              <p class="mb-6 text-slate-600">
+                発表で扱うべき具体的な内容と、その深さ・広さを定義するセクションです。「若手」や「業界」といった言葉の定義を合わせ、調査すべき項目を具体化することで、手戻りのない効率的なリサーチを可能にします。
+              </p>
+              <div class="space-y-4">
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="b1">
+                  <h3 class="font-semibold text-lg mb-2">
+                    1. テーマの定義について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    <b>「若手」</b>:
+                    このテーマにおける「若手」とは、どのような層を指しますか？（例：新卒の就活生、第二新卒、20代の転職希望者など）
+                  </p>
+                  <p class="mb-3 text-slate-700">
+                    <b>「就活市場における電気機械業界」</b>:
+                    調査対象は、電機メーカー業界全体でしょうか。あるいは、私たち自身の部門と比較する意味合いが強いのでしょうか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="キーワードの定義を明確に..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="b2">
+                  <h3 class="font-semibold text-lg mb-2">
+                    2. 調査の具体的な範囲について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    私たちが調査・分析する上で、特に重点を置いてほしい情報や、必ず含めてほしい項目はありますか？（例：企業の基本情報（規模、売上）、ビジネスモデル、DXの推進度、具体的なプロジェクト内容、働きがい、給与水準、社風など）
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="調査項目の優先順位をリストアップ..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="b3">
+                  <h3 class="font-semibold text-lg mb-2">
+                    3. 期待するアウトプットのレベルについて
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    最終的な発表は、客観的な事実をまとめた「調査レポート」の形式が望ましいですか。それとも、私たちなりの分析を加えた「考察」や、具体的な「提言」まで踏み込むことを期待されていますか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="アウトプットの到達レベルを具体的に..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="b4">
+                  <h3 class="font-semibold text-lg mb-2">
+                    4. 聞き手（オーディエンス）について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    当日の聞き手は、同期の研修生がメインでしょうか。それとも、役員や他部署の管理職の方々も含まれる構成でしょうか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      placeholder="聞き手の属性、知識レベル、関心事を想定..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section C: HOW -->
+            <section id="how" class="mb-12">
+              <h2
+                class="text-xl font-bold border-b-2 border-indigo-600 pb-2 mb-4 text-indigo-800"
+              >
+                C. 評価と進め方の確認 (How: どうすれば成功か、どう進めるか？)
+              </h2>
+              <p class="mb-6 text-slate-600">
+                プロジェクトの成功基準と、効率的な進め方について合意形成するセクションです。評価のポイントを把握し、利用できるリソースを確認することで、チームは最短距離でゴールを目指すことができます。
+              </p>
+              <div class="space-y-4">
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="c1">
+                  <h3 class="font-semibold text-lg mb-2">
+                    1. 評価のポイントについて
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    この発表は何をもって「良い発表」と評価されますか。特に重視される点（例：分析の深さ、情報の網羅性、提言の鋭さ、発表の分かりやすさなど）を教えてください。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="評価基準を明確にし、チームの目標とする..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="c2">
+                  <h3 class="font-semibold text-lg mb-2">
+                    2. サポート体制について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    準備を進める上で、私たちが相談できるメンターの方や、参考にできる社内資料、利用できる外部サービスなどはありますか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="活用できるリソースをリストアップ..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-white p-5 rounded-lg shadow-md" data-id="c3">
+                  <h3 class="font-semibold text-lg mb-2">
+                    3. 進捗の確認について
+                  </h3>
+                  <p class="mb-3 text-slate-700">
+                    もし可能であれば、準備の途中で一度、方向性のすり合わせや進捗をご報告させていただく機会（中間レビュー）を設けていただくことは可能でしょうか。
+                  </p>
+                  <div class="mt-4">
+                    <h4 class="text-sm font-semibold mb-2">議論メモ:</h4>
+                    <textarea
+                      class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="中間レビューの日程や内容を調整..."
+                    ></textarea>
+                  </div>
+                  <div class="flex justify-end items-center mt-3">
+                    <button
+                      class="status-btn text-sm font-medium py-1 px-3 rounded-full"
+                    >
+                      未確認
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const statuses = ["未確認", "議論中", "確認済"];
+        const statusColors = {
+          未確認: "bg-slate-200 text-slate-700",
+          議論中: "bg-amber-100 text-amber-800",
+          確認済: "bg-green-100 text-green-800",
+        };
+
+        const statusButtons = document.querySelectorAll(".status-btn");
+
+        statusButtons.forEach((btn) => {
+          let currentStatusIndex = 0;
+
+          const updateButton = () => {
+            btn.textContent = statuses[currentStatusIndex];
+            btn.className =
+              "status-btn text-sm font-medium py-1 px-3 rounded-full " +
+              statusColors[statuses[currentStatusIndex]];
+          };
+
+          btn.addEventListener("click", () => {
+            currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
+            updateButton();
+          });
+
+          updateButton();
+        });
+
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll("section");
+
+        const observerOptions = {
+          root: null,
+          rootMargin: "0px",
+          threshold: 0.3,
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              navLinks.forEach((link) => {
+                link.classList.remove("active");
+                if (
+                  link.getAttribute("href").substring(1) === entry.target.id
+                ) {
+                  link.classList.add("active");
+                }
+              });
+            }
+          });
+        }, observerOptions);
+
+        sections.forEach((section) => {
+          observer.observe(section);
+        });
+
+        navLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href");
+            document.querySelector(targetId).scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
