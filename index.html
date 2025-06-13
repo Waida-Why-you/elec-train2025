@@ -26,6 +26,11 @@
       .status-btn {
         transition: all 0.2s ease-in-out;
       }
+      textarea {
+        resize: none;
+        overflow: hidden;
+        min-height: 60px;
+      }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-800">
@@ -67,6 +72,13 @@
                     href="#how"
                     class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200"
                     >C. 評価と進め方 (How)</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="#other"
+                    class="nav-link block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-200"
+                    >D. その他</a
                   >
                 </li>
               </ul>
@@ -342,6 +354,28 @@
                 </div>
               </div>
             </section>
+
+            <!-- Section D: OTHER -->
+            <section id="other" class="mb-12">
+              <h2
+                class="text-xl font-bold border-b-2 border-slate-600 pb-2 mb-4 text-slate-800"
+              >
+                D. その他
+              </h2>
+              <p class="mb-6 text-slate-600">
+                ディスカッション全体を通してのメモや、次のアクションアイテム、保留事項などを自由に記録するエリアです。
+              </p>
+              <div class="bg-white p-5 rounded-lg shadow-md" data-id="d1">
+                <h3 class="font-semibold text-lg mb-2">総合メモ</h3>
+                <div class="mt-4">
+                  <textarea
+                    class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    placeholder="自由にメモを記録..."
+                    rows="8"
+                  ></textarea>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </main>
@@ -357,6 +391,11 @@
         };
         const storageKey = "kickoffDashboardData";
         let appData = {};
+
+        const autoResizeTextarea = (element) => {
+          element.style.height = "auto";
+          element.style.height = element.scrollHeight + "px";
+        };
 
         const saveData = () => {
           localStorage.setItem(storageKey, JSON.stringify(appData));
@@ -379,15 +418,20 @@
             const cardData = appData[cardId];
 
             const textarea = card.querySelector("textarea");
-            textarea.value = cardData.note;
+            if (textarea) {
+              textarea.value = cardData.note;
+              autoResizeTextarea(textarea);
+            }
 
             const btn = card.querySelector(".status-btn");
-            const statusIndex = cardData.statusIndex || 0;
-            btn.textContent = statuses[statusIndex];
-            btn.className =
-              "status-btn text-sm font-medium py-1 px-3 rounded-full " +
-              statusColors[statuses[statusIndex]];
-            btn.dataset.statusIndex = statusIndex;
+            if (btn) {
+              const statusIndex = cardData.statusIndex || 0;
+              btn.textContent = statuses[statusIndex];
+              btn.className =
+                "status-btn text-sm font-medium py-1 px-3 rounded-full " +
+                statusColors[statuses[statusIndex]];
+              btn.dataset.statusIndex = statusIndex;
+            }
           });
         };
 
@@ -396,29 +440,34 @@
             const cardId = card.getAttribute("data-id");
 
             const btn = card.querySelector(".status-btn");
-            btn.addEventListener("click", () => {
-              let currentStatusIndex = parseInt(btn.dataset.statusIndex, 10);
-              currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
+            if (btn) {
+              btn.addEventListener("click", () => {
+                let currentStatusIndex = parseInt(btn.dataset.statusIndex, 10);
+                currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
 
-              appData[cardId].statusIndex = currentStatusIndex;
-              saveData();
+                appData[cardId].statusIndex = currentStatusIndex;
+                saveData();
 
-              btn.dataset.statusIndex = currentStatusIndex;
-              btn.textContent = statuses[currentStatusIndex];
-              btn.className =
-                "status-btn text-sm font-medium py-1 px-3 rounded-full " +
-                statusColors[statuses[currentStatusIndex]];
-            });
+                btn.dataset.statusIndex = currentStatusIndex;
+                btn.textContent = statuses[currentStatusIndex];
+                btn.className =
+                  "status-btn text-sm font-medium py-1 px-3 rounded-full " +
+                  statusColors[statuses[currentStatusIndex]];
+              });
+            }
 
             const textarea = card.querySelector("textarea");
-            let debounceTimer;
-            textarea.addEventListener("input", () => {
-              clearTimeout(debounceTimer);
-              debounceTimer = setTimeout(() => {
-                appData[cardId].note = textarea.value;
-                saveData();
-              }, 300);
-            });
+            if (textarea) {
+              let debounceTimer;
+              textarea.addEventListener("input", () => {
+                autoResizeTextarea(textarea);
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                  appData[cardId].note = textarea.value;
+                  saveData();
+                }, 300);
+              });
+            }
           });
         };
 
