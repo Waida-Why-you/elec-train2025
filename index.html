@@ -378,45 +378,37 @@
         doc,
         onSnapshot,
         setDoc,
+        updateDoc,
       } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      // 定数の定義
-      const STATUSES = ["未確認", "議論中", "確認済"];
-      const STATUS_COLORS = {
-        未確認: "bg-slate-200 text-slate-700",
-        議論中: "bg-amber-100 text-amber-800",
-        確認済: "bg-green-100 text-green-800",
+      const firebaseConfig = {
+        apiKey: "AIzaSyCHPWzMOQ0uw79NIiGdw1dsniH4fwz7ZOA",
+        authDomain: "elec-train2025.firebaseapp.com",
+        projectId: "elec-train2025",
+        storageBucket: "elec-train2025.firebasestorage.app",
+        messagingSenderId: "298096330805",
+        appId: "1:298096330805:web:3d76b8c31167294089c97c",
       };
-
-      // Firebase設定
-      const firebaseConfig =
-        typeof __firebase_config !== "undefined"
-          ? JSON.parse(__firebase_config)
-          : {
-              apiKey: "YOUR_API_KEY",
-              authDomain: "YOUR_AUTH_DOMAIN",
-              projectId: "YOUR_PROJECT_ID",
-            };
       const appId =
         typeof __app_id !== "undefined"
           ? __app_id
           : "default-kickoff-dashboard";
 
-      // アプリケーションの初期化
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+
+      const statuses = ["未確認", "議論中", "確認済"];
+      const statusColors = {
+        未確認: "bg-slate-200 text-slate-700",
+        議論中: "bg-amber-100 text-amber-800",
+        確認済: "bg-green-100 text-green-800",
+      };
+
       let dbDocRef;
       let isUpdating = false;
 
-      // DOM要素のキャッシュ
-      const loadingOverlay = document.getElementById("loading-overlay");
-      const cards = document.querySelectorAll(".bg-white[data-id]");
-      const navLinks = document.querySelectorAll(".nav-link");
-      const sections = document.querySelectorAll("section");
-
-      // 認証処理
-      async function authenticate() {
+      async function main() {
         try {
           if (
             typeof __initial_auth_token !== "undefined" &&
@@ -426,16 +418,33 @@
           } else {
             await signInAnonymously(auth);
           }
-          return true;
         } catch (error) {
           console.error("Authentication failed:", error);
-          return false;
+          return;
         }
+
+        dbDocRef = doc(
+          db,
+          `/artifacts/${appId}/public/data/kickoff_dashboard/state`
+        );
+
+        onSnapshot(dbDocRef, (doc) => {
+          isUpdating = true;
+          const appData = doc.exists() ? doc.data() : {};
+          updateUI(appData);
+          document.getElementById("loading-overlay").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("loading-overlay").style.display = "none";
+          }, 300);
+          isUpdating = false;
+        });
+
+        setupEventListeners();
+        setupNavObserver();
       }
 
-      // UI更新処理
       function updateUI(appData) {
-        cards.forEach((card) => {
+        document.querySelectorAll(".bg-white[data-id]").forEach((card) => {
           const cardId = card.getAttribute("data-id");
           const cardData = appData[cardId] || { statusIndex: 0, note: "" };
 
@@ -447,16 +456,39 @@
           const btn = card.querySelector(".status-btn");
           if (btn) {
             const statusIndex = cardData.statusIndex;
-            btn.textContent = STATUSES[statusIndex];
-            btn.className = `status-btn text-sm font-medium py-1 px-3 rounded-full ${
-              STATUS_COLORS[STATUSES[statusIndex]]
-            }`;
+            btn.textContent = statuses[statusIndex];
+            btn.className =
+              "status-btn text-sm font-medium py-1 px-3 rounded-full " +
+              statusColors[statuses[statusIndex]];
             btn.dataset.statusIndex = statusIndex;
           }
         });
       }
 
-      // Firestore更新処理
+      function setupEventListeners() {
+        document.querySelectorAll(".bg-white[data-id]").forEach((card) => {
+          const cardId = card.getAttribute("data-id");
+
+          const btn = card.querySelector(".status-btn");
+          btn.addEventListener("click", () => {
+            let currentStatusIndex = parseInt(btn.dataset.statusIndex, 10);
+            currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
+
+            updateFirestore({ [`${cardId}.statusIndex`]: currentStatusIndex });
+          });
+
+          const textarea = card.querySelector("textarea");
+          let debounceTimer;
+          textarea.addEventListener("input", () => {
+            if (isUpdating) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+              updateFirestore({ [`${cardId}.note`]: textarea.value });
+            }, 500);
+          });
+        });
+      }
+
       async function updateFirestore(data) {
         try {
           await setDoc(dbDocRef, data, { merge: true });
@@ -468,44 +500,9 @@
         }
       }
 
-      // イベントリスナーの設定
-      function setupEventListeners() {
-        cards.forEach((card) => {
-          const cardId = card.getAttribute("data-id");
-          const btn = card.querySelector(".status-btn");
-          const textarea = card.querySelector("textarea");
-          let debounceTimer;
-
-          btn.addEventListener("click", () => {
-            if (isUpdating) return;
-            const currentStatusIndex =
-              (parseInt(btn.dataset.statusIndex, 10) + 1) % STATUSES.length;
-            updateFirestore({ [`${cardId}.statusIndex`]: currentStatusIndex });
-          });
-
-          textarea.addEventListener("input", () => {
-            if (isUpdating) return;
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-              updateFirestore({ [`${cardId}.note`]: textarea.value });
-            }, 300); // デバウンス時間を500msから300msに短縮
-          });
-        });
-
-        // ナビゲーションの設定
-        navLinks.forEach((link) => {
-          link.addEventListener("click", (e) => {
-            e.preventDefault();
-            document.querySelector(link.getAttribute("href")).scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          });
-        });
-      }
-
-      // ナビゲーションオブザーバーの設定
       function setupNavObserver() {
+        const navLinks = document.querySelectorAll(".nav-link");
+        const sections = document.querySelectorAll("section");
         const observerOptions = {
           root: null,
           rootMargin: "0px",
@@ -528,30 +525,15 @@
         }, observerOptions);
 
         sections.forEach((section) => observer.observe(section));
-      }
 
-      // メイン処理
-      async function main() {
-        if (!(await authenticate())) return;
-
-        dbDocRef = doc(
-          db,
-          `/artifacts/${appId}/public/data/kickoff_dashboard/state`
-        );
-
-        onSnapshot(dbDocRef, (doc) => {
-          isUpdating = true;
-          const appData = doc.exists() ? doc.data() : {};
-          updateUI(appData);
-          loadingOverlay.style.opacity = "0";
-          setTimeout(() => {
-            loadingOverlay.style.display = "none";
-          }, 300);
-          isUpdating = false;
+        navLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            document
+              .querySelector(link.getAttribute("href"))
+              .scrollIntoView({ behavior: "smooth", block: "start" });
+          });
         });
-
-        setupEventListeners();
-        setupNavObserver();
       }
 
       main();
